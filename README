@@ -1,0 +1,41 @@
+# twoDGame
+
+twoDGame is a C++17 SDL3 project built with CMake.
+
+## Project Layout
+
+- `src/` - game source files
+- `include/` - shared headers
+- `libraries/SDL/` - vendored SDL3 dependency
+- `build/` - local build output from CMake
+
+## Requirements
+
+- CMake 3.16 or newer
+- A C++17 compiler such as `g++.exe`
+- SDL3 is already included in `libraries/SDL/`
+
+## Build on Windows
+
+From the project root:
+
+```powershell
+cmake -S . -B build -G Ninja
+cmake --build build
+```
+
+If you are using a different generator, replace `-G Ninja` with the generator you want or omit it to let CMake choose the default.
+
+## Run
+
+After building, run the executable from the `build/` folder:
+
+```powershell
+.\build\twoDGame.exe
+```
+
+The build step copies `SDL3.dll` next to the executable automatically.
+
+## Git
+
+This repository includes a `.gitignore` that excludes build outputs and generated files so the project can be pushed cleanly.

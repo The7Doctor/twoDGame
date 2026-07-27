@@ -1,0 +1,34 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(twoDGame)
+
+set(CMAKE_CXX_STANDARD 17)
+
+add_subdirectory(libraries/SDL)
+
+add_executable(
+    twoDGame
+    src/main.cpp
+    src/biome.cpp
+    src/camera.cpp
+    src/game.cpp
+    src/input.cpp
+    src/player.cpp
+    src/renderer.cpp
+)
+
+target_include_directories(
+    twoDGame
+    PRIVATE include
+)
+
+target_link_libraries(
+    twoDGame
+    PRIVATE SDL3::SDL3
+)
+
+add_custom_command(TARGET twoDGame POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    $<TARGET_FILE:SDL3::SDL3>
+    $<TARGET_FILE_DIR:twoDGame>/SDL3.dll
+)
