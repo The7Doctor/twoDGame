@@ -6,6 +6,7 @@ twoDGame is a C++17 SDL3 project built with CMake.
 
 - `src/` - game source files
 - `include/` - shared headers
+- `assets/` - textures and other runtime game assets
 - `libraries/SDL/` - vendored SDL3 dependency
 - `build/` - local build output from CMake
 
@@ -35,6 +36,7 @@ After building, run the executable from the `build/` folder:
 ```
 
 The build step copies `SDL3.dll` next to the executable automatically.
+It also copies the `assets/` directory to `build/assets/` so texture loads work when running from the build folder.
 
 ## Git
 

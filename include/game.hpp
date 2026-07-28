@@ -5,6 +5,7 @@
 #include "input.hpp"
 #include "player.hpp"
 #include "renderer.hpp"
+#include "texture.hpp"
 
 class Game {
 public:
@@ -35,4 +36,6 @@ private:
 	Biome biome_;
 	Player player_;
 	Camera camera_;
+	Texture biomeTexture_;
+	SDL_FRect biomeTileSrcRect_ {0.0f, 0.0f, static_cast<float>(kBlockSize), static_cast<float>(kBlockSize)};
 };

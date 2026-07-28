@@ -25,6 +25,15 @@ bool Game::init() {
 	player_.init(spawnX, spawnY, static_cast<float>(kPlayerSize), static_cast<float>(kPlayerSize));
 	camera_.init(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight), static_cast<float>(kWindowWidth), static_cast<float>(kWorldHeight));
 	camera_.follow(player_.x(), player_.y(), player_.width(), player_.height());
+
+	if (!renderer_.loadTextureFromPng("assets/textures/Textures-16.png", biomeTexture_)) {
+		renderer_.loadTextureFromPng("../assets/textures/Textures-16.png", biomeTexture_);
+	}
+
+	if (!biomeTexture_.isValid()) {
+		std::fprintf(stderr, "Biome texture not available. Falling back to rectangle tiles.\n");
+	}
+
 	running_ = true;
 	return true;
 }
@@ -53,6 +62,7 @@ void Game::run() {
 }
 
 void Game::shutdown() {
+	biomeTexture_.unload();
 	renderer_.shutdown();
 }
 
@@ -64,7 +74,9 @@ void Game::update(float deltaTime) {
 void Game::render() {
 	renderer_.beginFrame(17, 17, 24, 255);
 	renderer_.setCameraOffset(camera_.x(), camera_.y());
-	biome_.renderProto(renderer_);
+	const Texture* biomeTexture = biomeTexture_.isValid() ? &biomeTexture_ : nullptr;
+	const SDL_FRect* tileSrcRect = biomeTexture ? &biomeTileSrcRect_ : nullptr;
+	biome_.renderProto(renderer_, biomeTexture, tileSrcRect);
 	renderer_.drawFilledRect(player_.x(), player_.y(), player_.width(), player_.height(), 0, 220, 120, 255);
 	renderer_.endFrame();
 }

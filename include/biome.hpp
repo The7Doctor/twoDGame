@@ -2,9 +2,12 @@
 
 #include "block.hpp"
 
+#include <SDL3/SDL.h>
+
 #include <vector>
 
 class Renderer;
+class Texture;
 
 class Biome {
 public:
@@ -15,7 +18,7 @@ public:
 	bool findSolidTopAtSpan(float leftX, float rightX, float worldY, float& outTopY) const;
 	int damageSolidTilesInAabb(float leftX, float topY, float rightX, float bottomY, int damageAmount);
 
-	void renderProto(Renderer& renderer) const;
+	void renderProto(Renderer& renderer, const Texture* tileTexture, const SDL_FRect* tileSrcRect) const;
 
 	int tileSize() const;
 	int columns() const;

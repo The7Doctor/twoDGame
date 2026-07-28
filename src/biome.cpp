@@ -1,6 +1,7 @@
 #include "biome.hpp"
 
 #include "renderer.hpp"
+#include "texture.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -130,7 +131,7 @@ int Biome::damageSolidTilesInAabb(float leftX, float topY, float rightX, float b
 	return destroyedCount;
 }
 
-void Biome::renderProto(Renderer& renderer) const {
+void Biome::renderProto(Renderer& renderer, const Texture* tileTexture, const SDL_FRect* tileSrcRect) const {
 	if (columns_ <= 0 || rows_ <= 0 || tileSize_ <= 0) {
 		return;
 	}
@@ -141,11 +142,19 @@ void Biome::renderProto(Renderer& renderer) const {
 				continue;
 			}
 
+			const float worldX = static_cast<float>(col * tileSize_);
+			const float worldY = static_cast<float>(row * tileSize_);
+			const float tileSize = static_cast<float>(tileSize_);
+
+			if (tileTexture && tileSrcRect && renderer.drawTexture(*tileTexture, tileSrcRect, worldX, worldY, tileSize, tileSize)) {
+				continue;
+			}
+
 			renderer.drawFilledRect(
-				static_cast<float>(col * tileSize_),
-				static_cast<float>(row * tileSize_),
-				static_cast<float>(tileSize_),
-				static_cast<float>(tileSize_),
+				worldX,
+				worldY,
+				tileSize,
+				tileSize,
 				102,
 				92,
 				81,
