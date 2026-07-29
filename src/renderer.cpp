@@ -74,6 +74,22 @@ void Renderer::drawFilledRect(float x, float y, float w, float h, Uint8 r, Uint8
 	SDL_RenderFillRect(renderer_, &rect);
 }
 
+void Renderer::drawFilledRectScreen(float x, float y, float w, float h, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+	if (!renderer_) {
+		return;
+	}
+
+	SDL_SetRenderDrawColor(renderer_, r, g, b, a);
+
+	SDL_FRect rect;
+	rect.x = x;
+	rect.y = y;
+	rect.w = w;
+	rect.h = h;
+
+	SDL_RenderFillRect(renderer_, &rect);
+}
+
 bool Renderer::loadTextureFromPng(const char* filePath, Texture& outTexture, bool whiteColorKey) {
 	if (!renderer_ || !filePath || filePath[0] == '\0') {
 		return false;
