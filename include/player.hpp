@@ -19,6 +19,10 @@ private:
 	float y_ = 0.0f;
 	float width_ = 48.0f;
 	float height_ = 48.0f;
+	float hitboxOffsetX_ = 9.0f;
+	float hitboxOffsetY_ = 3.0f;
+	float hitboxWidth_ = 30.0f;
+	float hitboxHeight_ = 42.0f;
 	float runSpeed_ = 260.0f;
 	float velocityY_ = 0.0f;
 	float gravity_ = 1800.0f;

@@ -38,4 +38,6 @@ private:
 	Camera camera_;
 	Texture biomeTexture_;
 	SDL_FRect biomeTileSrcRect_ {0.0f, 0.0f, static_cast<float>(kBlockSize), static_cast<float>(kBlockSize)};
+	Texture playerTexture_;
+	SDL_FRect playerSpriteSrcRect_ {0.0f, 0.0f, 809.0f, 896.0f};
 };

@@ -74,7 +74,7 @@ void Renderer::drawFilledRect(float x, float y, float w, float h, Uint8 r, Uint8
 	SDL_RenderFillRect(renderer_, &rect);
 }
 
-bool Renderer::loadTextureFromPng(const char* filePath, Texture& outTexture) {
+bool Renderer::loadTextureFromPng(const char* filePath, Texture& outTexture, bool whiteColorKey) {
 	if (!renderer_ || !filePath || filePath[0] == '\0') {
 		return false;
 	}
@@ -85,12 +85,21 @@ bool Renderer::loadTextureFromPng(const char* filePath, Texture& outTexture) {
 		return false;
 	}
 
+	if (whiteColorKey) {
+		const Uint32 white = SDL_MapSurfaceRGB(loadedSurface, 255, 255, 255);
+		if (!SDL_SetSurfaceColorKey(loadedSurface, true, white)) {
+			std::fprintf(stderr, "SDL_SetSurfaceColorKey failed for '%s': %s\n", filePath, SDL_GetError());
+		}
+	}
+
 	SDL_Texture* createdTexture = SDL_CreateTextureFromSurface(renderer_, loadedSurface);
 	if (!createdTexture) {
 		std::fprintf(stderr, "SDL_CreateTextureFromSurface failed for '%s': %s\n", filePath, SDL_GetError());
 		SDL_DestroySurface(loadedSurface);
 		return false;
 	}
+
+	SDL_SetTextureBlendMode(createdTexture, SDL_BLENDMODE_BLEND);
 
 	float textureWidth = 0.0f;
 	float textureHeight = 0.0f;

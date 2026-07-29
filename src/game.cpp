@@ -17,12 +17,21 @@ bool Game::init() {
 
 	float spawnX = 0.0f;
 	float spawnY = 0.0f;
-	const float preferredX = (static_cast<float>(kWindowWidth) * 0.5f) - (static_cast<float>(kPlayerSize) * 0.5f);
-	if (!biome_.computeSpawn(static_cast<float>(kPlayerSize), static_cast<float>(kPlayerSize), preferredX, spawnX, spawnY)) {
+	constexpr float kPlayerHitboxWidth = 30.0f;
+	constexpr float kPlayerHitboxHeight = 42.0f;
+	constexpr float kPlayerHitboxOffsetX = 9.0f;
+	constexpr float kPlayerHitboxOffsetY = 3.0f;
+	const float preferredX = (static_cast<float>(kWindowWidth) * 0.5f) - (kPlayerHitboxWidth * 0.5f);
+	if (!biome_.computeSpawn(kPlayerHitboxWidth, kPlayerHitboxHeight, preferredX, spawnX, spawnY)) {
 		return false;
 	}
 
-	player_.init(spawnX, spawnY, static_cast<float>(kPlayerSize), static_cast<float>(kPlayerSize));
+	player_.init(
+		spawnX - kPlayerHitboxOffsetX,
+		spawnY - kPlayerHitboxOffsetY,
+		static_cast<float>(kPlayerSize),
+		static_cast<float>(kPlayerSize)
+	);
 	camera_.init(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight), static_cast<float>(kWindowWidth), static_cast<float>(kWorldHeight));
 	camera_.follow(player_.x(), player_.y(), player_.width(), player_.height());
 
@@ -32,6 +41,14 @@ bool Game::init() {
 
 	if (!biomeTexture_.isValid()) {
 		std::fprintf(stderr, "Biome texture not available. Falling back to rectangle tiles.\n");
+	}
+
+	if (!renderer_.loadTextureFromPng("assets/skins/Sprites.png", playerTexture_)) {
+		renderer_.loadTextureFromPng("../assets/skins/Sprites.png", playerTexture_);
+	}
+
+	if (!playerTexture_.isValid()) {
+		std::fprintf(stderr, "Player sprite sheet not available. Falling back to rectangle player.\n");
 	}
 
 	running_ = true;
@@ -62,6 +79,7 @@ void Game::run() {
 }
 
 void Game::shutdown() {
+	playerTexture_.unload();
 	biomeTexture_.unload();
 	renderer_.shutdown();
 }
@@ -77,7 +95,19 @@ void Game::render() {
 	const Texture* biomeTexture = biomeTexture_.isValid() ? &biomeTexture_ : nullptr;
 	const SDL_FRect* tileSrcRect = biomeTexture ? &biomeTileSrcRect_ : nullptr;
 	biome_.renderProto(renderer_, biomeTexture, tileSrcRect);
-	renderer_.drawFilledRect(player_.x(), player_.y(), player_.width(), player_.height(), 0, 220, 120, 255);
+
+	const bool drewPlayerSprite = playerTexture_.isValid() && renderer_.drawTexture(
+		playerTexture_,
+		&playerSpriteSrcRect_,
+		player_.x(),
+		player_.y(),
+		player_.width(),
+		player_.height()
+	);
+
+	if (!drewPlayerSprite) {
+		renderer_.drawFilledRect(player_.x(), player_.y(), player_.width(), player_.height(), 0, 220, 120, 255);
+	}
 	renderer_.endFrame();
 }
 
