@@ -105,6 +105,24 @@ void drawHudTextTopRight(Renderer& renderer, int screenWidth, const char* text) 
 		drawHudGlyph(renderer, glyphX, startY, text[i], pixelSize);
 	}
 }
+
+bool findSurfaceYAtX(const Biome& biome, float worldX, float& outSurfaceY) {
+	const int tileSize = biome.tileSize();
+	if (tileSize <= 0 || biome.rows() <= 0) {
+		return false;
+	}
+
+	const float probeX = worldX;
+	for (int row = 0; row < biome.rows(); ++row) {
+		const float probeY = (static_cast<float>(row) * static_cast<float>(tileSize)) + 1.0f;
+		if (biome.isSolidAtWorldPoint(probeX, probeY)) {
+			outSurfaceY = static_cast<float>(row * tileSize);
+			return true;
+		}
+	}
+
+	return false;
+}
 }
 
 bool Game::init() {
@@ -133,6 +151,17 @@ bool Game::init() {
 		static_cast<float>(kPlayerSize),
 		static_cast<float>(kPlayerSize)
 	);
+
+	const float rawSquareSpawnX = player_.x() + player_.width() + 80.0f;
+	const float maxSquareSpawnX = std::max(0.0f, static_cast<float>(kWorldWidth) - kWeaponSize);
+	const float squareSpawnX = std::clamp(rawSquareSpawnX, 0.0f, maxSquareSpawnX);
+	float surfaceY = 0.0f;
+	if (findSurfaceYAtX(biome_, squareSpawnX + (kWeaponSize * 0.5f), surfaceY)) {
+		squareWeapon_.spawnOnFloor(squareSpawnX, surfaceY - kWeaponSize, kWeaponSize);
+	} else {
+		squareWeapon_.spawnOnFloor(squareSpawnX, player_.y() + player_.height(), kWeaponSize);
+	}
+
 	camera_.init(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight), static_cast<float>(kWorldWidth), static_cast<float>(kWorldHeight));
 	camera_.follow(player_.x(), player_.y(), player_.width(), player_.height());
 
@@ -188,6 +217,39 @@ void Game::shutdown() {
 void Game::update(float deltaTime) {
 	player_.update(input_, deltaTime, biome_, kWorldWidth, kWorldHeight);
 	camera_.follow(player_.x(), player_.y(), player_.width(), player_.height());
+
+	if (input_.isPressed(SDL_SCANCODE_X)) {
+		if (squareWeapon_.isHeld()) {
+			const float dropX = player_.x() + (player_.width() * 0.5f) - (squareWeapon_.size() * 0.5f);
+			const float dropY = player_.y() + player_.height() - squareWeapon_.size() + kWeaponDropOffsetY;
+			squareWeapon_.dropTo(dropX, dropY);
+		} else {
+			const float playerCenterX = player_.x() + (player_.width() * 0.5f);
+			const float playerCenterY = player_.y() + (player_.height() * 0.5f);
+			squareWeapon_.tryPickup(playerCenterX, playerCenterY, kPickupRadius);
+		}
+	}
+
+	if (squareWeapon_.isHeld() && input_.isMouseLeftPressed()) {
+		float handX = 0.0f;
+		float handY = 0.0f;
+		squareWeapon_.getHeldAnchor(player_.x(), player_.y(), player_.width(), player_.height(), handX, handY);
+		const float originX = handX + (squareWeapon_.size() * 0.5f);
+		const float originY = handY + (squareWeapon_.size() * 0.5f);
+		const float mouseWorldX = input_.mouseX() + camera_.x();
+		const float mouseWorldY = input_.mouseY() + camera_.y();
+		squareWeapon_.tryFire(
+			originX,
+			originY,
+			mouseWorldX,
+			mouseWorldY,
+			kProjectileSpeed,
+			kProjectileLifetime,
+			kFireCooldown
+		);
+	}
+
+	squareWeapon_.update(deltaTime, biome_);
 }
 
 void Game::render() {
@@ -209,6 +271,10 @@ void Game::render() {
 	if (!drewPlayerSprite) {
 		renderer_.drawFilledRect(player_.x(), player_.y(), player_.width(), player_.height(), 0, 220, 120, 255);
 	}
+
+	squareWeapon_.renderFloor(renderer_);
+	squareWeapon_.renderHeld(renderer_, player_.x(), player_.y(), player_.width(), player_.height());
+	squareWeapon_.renderProjectiles(renderer_);
 
 	char positionText[64];
 	std::snprintf(

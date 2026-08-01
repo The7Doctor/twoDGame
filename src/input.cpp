@@ -6,10 +6,12 @@
 
 void Input::beginFrame() {
 	if (!currentKeys_ || numKeys_ <= 0) {
+		previousMouseButtons_ = currentMouseButtons_;
 		return;
 	}
 
 	previousKeys_.assign(currentKeys_, currentKeys_ + numKeys_);
+	previousMouseButtons_ = currentMouseButtons_;
 }
 
 void Input::poll(bool& shouldQuit) {
@@ -24,6 +26,8 @@ void Input::poll(bool& shouldQuit) {
 	if (numKeys_ > 0 && static_cast<int>(previousKeys_.size()) != numKeys_) {
 		previousKeys_.assign(numKeys_, false);
 	}
+
+	currentMouseButtons_ = SDL_GetMouseState(&mouseX_, &mouseY_);
 }
 
 bool Input::isHeld(SDL_Scancode scancode) const {
@@ -42,6 +46,24 @@ bool Input::isPressed(SDL_Scancode scancode) const {
 	const bool current = currentKeys_[scancode];
 	const bool previous = (scancode < static_cast<int>(previousKeys_.size())) ? previousKeys_[scancode] : false;
 	return current && !previous;
+}
+
+bool Input::isMouseLeftHeld() const {
+	return (currentMouseButtons_ & SDL_BUTTON_LMASK) != 0;
+}
+
+bool Input::isMouseLeftPressed() const {
+	const bool current = (currentMouseButtons_ & SDL_BUTTON_LMASK) != 0;
+	const bool previous = (previousMouseButtons_ & SDL_BUTTON_LMASK) != 0;
+	return current && !previous;
+}
+
+float Input::mouseX() const {
+	return mouseX_;
+}
+
+float Input::mouseY() const {
+	return mouseY_;
 }
 
 int Input::horizontalAxis() const {
