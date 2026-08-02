@@ -123,6 +123,7 @@ bool findSurfaceYAtX(const Biome& biome, float worldX, float& outSurfaceY) {
 
 	return false;
 }
+
 }
 
 bool Game::init() {
@@ -160,6 +161,16 @@ bool Game::init() {
 		squareWeapon_.spawnOnFloor(squareSpawnX, surfaceY - kWeaponSize, kWeaponSize);
 	} else {
 		squareWeapon_.spawnOnFloor(squareSpawnX, player_.y() + player_.height(), kWeaponSize);
+	}
+
+	const float friendSpawnX = std::clamp(player_.x() + player_.width() + 120.0f, 0.0f, static_cast<float>(kWorldWidth - kFriendSize));
+	const float friendLeftBound = std::max(0.0f, friendSpawnX - kFriendWalkRadius);
+	const float friendRightBound = std::min(static_cast<float>(kWorldWidth - kFriendSize), friendSpawnX + kFriendWalkRadius);
+	float friendSurfaceY = 0.0f;
+	if (findSurfaceYAtX(biome_, friendSpawnX + (kFriendSize * 0.5f), friendSurfaceY)) {
+		squareFriend_.spawnOnSurface(friendSpawnX, friendSurfaceY - kFriendSize, kFriendSize, friendLeftBound, friendRightBound);
+	} else {
+		squareFriend_.spawnOnSurface(friendSpawnX, player_.y() + player_.height(), kFriendSize, friendLeftBound, friendRightBound);
 	}
 
 	camera_.init(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight), static_cast<float>(kWorldWidth), static_cast<float>(kWorldHeight));
@@ -250,6 +261,7 @@ void Game::update(float deltaTime) {
 	}
 
 	squareWeapon_.update(deltaTime, biome_);
+	squareFriend_.update(deltaTime, biome_);
 }
 
 void Game::render() {
@@ -275,6 +287,7 @@ void Game::render() {
 	squareWeapon_.renderFloor(renderer_);
 	squareWeapon_.renderHeld(renderer_, player_.x(), player_.y(), player_.width(), player_.height());
 	squareWeapon_.renderProjectiles(renderer_);
+	squareFriend_.render(renderer_);
 
 	char positionText[64];
 	std::snprintf(

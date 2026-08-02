@@ -5,6 +5,7 @@
 #include "input.hpp"
 #include "player.hpp"
 #include "renderer.hpp"
+#include "squarefriend.hpp"
 #include "texture.hpp"
 #include "weapon.hpp"
 
@@ -36,6 +37,8 @@ private:
 	static constexpr float kProjectileSpeed = 650.0f;
 	static constexpr float kProjectileLifetime = 0.8f;
 	static constexpr float kFireCooldown = 0.14f;
+	static constexpr float kFriendSize = 16.0f;
+	static constexpr float kFriendWalkRadius = 140.0f;
 
 	static_assert(kPlayerSize == (kBlockSize * kBlocksPerPlayer), "Player size must be 3 blocks tall");
 
@@ -50,4 +53,5 @@ private:
 	Texture playerTexture_;
 	SDL_FRect playerSpriteSrcRect_ {0.0f, 0.0f, 809.0f, 896.0f};
 	SquareWeapon squareWeapon_;
+	SquareFriend squareFriend_;
 };
