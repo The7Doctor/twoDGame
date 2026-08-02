@@ -5,6 +5,7 @@
 #include <vector>
 
 class Biome;
+class SquareFriend;
 class Renderer;
 
 struct SquareProjectile {
@@ -40,7 +41,7 @@ public:
 		float fireCooldownSeconds
 	);
 
-	void update(float deltaTime, const Biome& biome);
+	void update(float deltaTime, Biome& biome, SquareFriend& squareFriend);
 	void renderFloor(Renderer& renderer) const;
 	void renderHeld(Renderer& renderer, float playerX, float playerY, float playerWidth, float playerHeight) const;
 	void renderProjectiles(Renderer& renderer) const;

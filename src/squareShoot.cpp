@@ -1,6 +1,7 @@
 #include "weapon.hpp"
 
 #include "biome.hpp"
+#include "squarefriend.hpp"
 #include "renderer.hpp"
 
 #include <algorithm>
@@ -8,6 +9,7 @@
 
 namespace {
 constexpr float kDirectionEpsilon = 0.001f;
+constexpr int kProjectileDamage = 1;
 constexpr Uint8 kFloorItemR = 88;
 constexpr Uint8 kFloorItemG = 180;
 constexpr Uint8 kFloorItemB = 255;
@@ -17,6 +19,26 @@ constexpr Uint8 kHeldItemB = 120;
 constexpr Uint8 kProjectileR = 255;
 constexpr Uint8 kProjectileG = 255;
 constexpr Uint8 kProjectileB = 170;
+
+bool projectileHitsFriend(const SquareProjectile& projectile, const SquareFriend& squareFriend) {
+	if (!squareFriend.isActive()) {
+		return false;
+	}
+
+	const float projectileLeft = projectile.x;
+	const float projectileRight = projectile.x + projectile.size;
+	const float projectileTop = projectile.y;
+	const float projectileBottom = projectile.y + projectile.size;
+	const float friendLeft = squareFriend.x();
+	const float friendRight = squareFriend.x() + squareFriend.width();
+	const float friendTop = squareFriend.y();
+	const float friendBottom = squareFriend.y() + squareFriend.height();
+
+	return projectileLeft < friendRight
+		&& projectileRight > friendLeft
+		&& projectileTop < friendBottom
+		&& projectileBottom > friendTop;
+}
 }
 
 void SquareWeapon::spawnOnFloor(float x, float y, float size) {
@@ -121,7 +143,7 @@ void SquareWeapon::tryFire(
 	fireCooldownRemaining_ = std::max(0.0f, fireCooldownSeconds);
 }
 
-void SquareWeapon::update(float deltaTime, const Biome& biome) {
+void SquareWeapon::update(float deltaTime, Biome& biome, SquareFriend& squareFriend) {
 	fireCooldownRemaining_ = std::max(0.0f, fireCooldownRemaining_ - deltaTime);
 
 	for (SquareProjectile& projectile : projectiles_) {
@@ -139,6 +161,16 @@ void SquareWeapon::update(float deltaTime, const Biome& biome) {
 		const float nextY = projectile.y + (projectile.vy * deltaTime);
 
 		if (collidesWithSolid(biome, nextX, nextY, projectile.size)) {
+			biome.damageSolidTilesInAabb(nextX, nextY, nextX + projectile.size, nextY + projectile.size, kProjectileDamage);
+			projectile.active = false;
+			continue;
+		}
+
+		SquareProjectile nextProjectile = projectile;
+		nextProjectile.x = nextX;
+		nextProjectile.y = nextY;
+		if (projectileHitsFriend(nextProjectile, squareFriend)) {
+			squareFriend.takeDamage(kProjectileDamage);
 			projectile.active = false;
 			continue;
 		}

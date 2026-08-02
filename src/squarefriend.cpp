@@ -42,6 +42,7 @@ void SquareFriend::spawnOnSurface(float x, float y, float size, float leftBound,
 	setPosition(x, y);
 	setSize(size, size);
 	setActive(true);
+	health_ = 3;
 	leftBound_ = std::min(leftBound, rightBound);
 	rightBound_ = std::max(leftBound, rightBound);
 	direction_ = randomDirection();
@@ -82,4 +83,18 @@ void SquareFriend::render(Renderer& renderer) const {
 	}
 
 	renderer.drawFilledRect(x_, y_, width_, height_, kFriendR, kFriendG, kFriendB, 255);
+}
+
+bool SquareFriend::takeDamage(int amount) {
+	if (!isActive() || amount <= 0) {
+		return false;
+	}
+
+	health_ -= amount;
+	if (health_ <= 0) {
+		setActive(false);
+		return true;
+	}
+
+	return false;
 }

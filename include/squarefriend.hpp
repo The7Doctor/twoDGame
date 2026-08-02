@@ -10,8 +10,10 @@ public:
 	void spawnOnSurface(float x, float y, float size, float leftBound, float rightBound);
 	void update(float deltaTime, const Biome& biome) override;
 	void render(Renderer& renderer) const override;
+	bool takeDamage(int amount);
 
 private:
+	int health_ = 3;
 	float speed_ = 90.0f;
 	float direction_ = 1.0f;
 	float leftBound_ = 0.0f;

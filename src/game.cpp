@@ -260,7 +260,7 @@ void Game::update(float deltaTime) {
 		);
 	}
 
-	squareWeapon_.update(deltaTime, biome_);
+	squareWeapon_.update(deltaTime, biome_, squareFriend_);
 	squareFriend_.update(deltaTime, biome_);
 }
 
